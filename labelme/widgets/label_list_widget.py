@@ -4,6 +4,7 @@ from qtpy import QtGui
 from qtpy.QtGui import QPalette
 from qtpy import QtWidgets
 from qtpy.QtWidgets import QStyle
+import math
 
 
 # https://stackoverflow.com/a/2039745/4158863
@@ -44,6 +45,7 @@ class HTMLDelegate(QtWidgets.QStyledItemDelegate):
             )
 
         textRect = style.subElementRect(QStyle.SE_ItemViewItemText, options)
+        textRect.setWidth(int(math.ceil(self.doc.idealWidth())))
 
         if index.column() != 0:
             textRect.adjust(5, 0, 0, 0)
