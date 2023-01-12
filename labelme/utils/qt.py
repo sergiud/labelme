@@ -6,6 +6,7 @@ import numpy as np
 from qtpy import QtCore
 from qtpy import QtGui
 from qtpy import QtWidgets
+from qtpy import QT_VERSION
 
 
 here = osp.dirname(osp.abspath(__file__))
@@ -69,6 +70,8 @@ def addActions(widget, actions):
 
 
 def labelValidator():
+    if int(QT_VERSION[0]) >= 6:
+        return QtGui.QRegularExpressionValidator(QtCore.QRegularExpression(r"^[^ \t].+"), None)
     return QtGui.QRegExpValidator(QtCore.QRegExp(r"^[^ \t].+"), None)
 
 

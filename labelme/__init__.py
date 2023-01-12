@@ -14,8 +14,8 @@ __appname__ = "labelme"
 # 3. PATCH version when you make backwards-compatible bug fixes.
 __version__ = "5.1.1"
 
-QT4 = QT_VERSION[0] == "4"
 QT5 = QT_VERSION[0] == "5"
+QT6 = QT_VERSION[0] == "6"
 del QT_VERSION
 
 PY2 = sys.version[0] == "2"

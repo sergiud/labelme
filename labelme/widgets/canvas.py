@@ -2,7 +2,7 @@ from qtpy import QtCore
 from qtpy import QtGui
 from qtpy import QtWidgets
 
-from labelme import QT5
+from labelme import QT6
 from labelme.shape import Shape
 import labelme.utils
 
@@ -22,8 +22,8 @@ MOVE_SPEED = 5.0
 
 class Canvas(QtWidgets.QWidget):
 
-    zoomRequest = QtCore.Signal(int, QtCore.QPoint)
-    scrollRequest = QtCore.Signal(int, int)
+    zoomRequest = QtCore.Signal(int, QtCore.QPointF)
+    scrollRequest = QtCore.Signal(int, QtCore.Qt.Orientation)
     newShape = QtCore.Signal()
     selectionChanged = QtCore.Signal(list)
     shapeMoved = QtCore.Signal()
@@ -203,10 +203,10 @@ class Canvas(QtWidgets.QWidget):
     def mouseMoveEvent(self, ev):
         """Update line with last point and current coordinates."""
         try:
-            if QT5:
-                pos = self.transformPos(ev.localPos())
+            if QT6:
+                pos = self.transformPos(ev.position())
             else:
-                pos = self.transformPos(ev.posF())
+                pos = self.transformPos(ev.pos())
         except AttributeError:
             return
 
@@ -361,10 +361,10 @@ class Canvas(QtWidgets.QWidget):
         self.movingShape = True  # Save changes
 
     def mousePressEvent(self, ev):
-        if QT5:
-            pos = self.transformPos(ev.localPos())
+        if QT6:
+            pos = self.transformPos(ev.position())
         else:
-            pos = self.transformPos(ev.posF())
+            pos = self.transformPos(ev.pos())
         if ev.button() == QtCore.Qt.LeftButton:
             if self.drawing():
                 if self.current:
@@ -381,7 +381,7 @@ class Canvas(QtWidgets.QWidget):
                     elif self.createMode == "linestrip":
                         self.current.addPoint(self.line[1])
                         self.line[0] = self.current[-1]
-                        if int(ev.modifiers()) == QtCore.Qt.ControlModifier:
+                        if ev.modifiers() == QtCore.Qt.ControlModifier:
                             self.finalise()
                 elif not self.outOfPixmap(pos):
                     # Create new shape.
@@ -401,17 +401,17 @@ class Canvas(QtWidgets.QWidget):
                     self.addPointToEdge()
                 elif (
                     self.selectedVertex()
-                    and int(ev.modifiers()) == QtCore.Qt.ShiftModifier
+                    and ev.modifiers() == QtCore.Qt.ShiftModifier
                 ):
                     # Delete point if: left-click + SHIFT on a point
                     self.removeSelectedPoint()
 
-                group_mode = int(ev.modifiers()) == QtCore.Qt.ControlModifier
+                group_mode = ev.modifiers() == QtCore.Qt.ControlModifier
                 self.selectShapePoint(pos, multiple_selection_mode=group_mode)
                 self.prevPoint = pos
                 self.repaint()
         elif ev.button() == QtCore.Qt.RightButton and self.editing():
-            group_mode = int(ev.modifiers()) == QtCore.Qt.ControlModifier
+            group_mode = ev.modifiers() == QtCore.Qt.ControlModifier
             if not self.selectedShapes or (
                 self.hShape is not None
                 and self.hShape not in self.selectedShapes
@@ -425,7 +425,7 @@ class Canvas(QtWidgets.QWidget):
             menu = self.menus[len(self.selectedShapesCopy) > 0]
             self.restoreCursor()
             if (
-                not menu.exec_(self.mapToGlobal(ev.pos()))
+                not menu.exec(self.mapToGlobal(ev.pos()))
                 and self.selectedShapesCopy
             ):
                 # Cancel the move by deleting the shadow copy.
@@ -626,7 +626,6 @@ class Canvas(QtWidgets.QWidget):
         p = self._painter
         p.begin(self)
         p.setRenderHint(QtGui.QPainter.Antialiasing)
-        p.setRenderHint(QtGui.QPainter.HighQualityAntialiasing)
         p.setRenderHint(QtGui.QPainter.SmoothPixmapTransform)
 
         p.scale(self.scale, self.scale)
@@ -782,32 +781,17 @@ class Canvas(QtWidgets.QWidget):
         return super(Canvas, self).minimumSizeHint()
 
     def wheelEvent(self, ev):
-        if QT5:
-            mods = ev.modifiers()
-            delta = ev.angleDelta()
-            if QtCore.Qt.ControlModifier == int(mods):
-                # with Ctrl/Command key
-                # zoom
-                self.zoomRequest.emit(delta.y(), ev.pos())
-            else:
-                # scroll
-                self.scrollRequest.emit(delta.x(), QtCore.Qt.Horizontal)
-                self.scrollRequest.emit(delta.y(), QtCore.Qt.Vertical)
+        mods = ev.modifiers()
+        delta = ev.angleDelta()
+        if QtCore.Qt.ControlModifier == mods:
+            # with Ctrl/Command key
+            # zoom
+            self.zoomRequest.emit(delta.y(), ev.position())
         else:
-            if ev.orientation() == QtCore.Qt.Vertical:
-                mods = ev.modifiers()
-                if QtCore.Qt.ControlModifier == int(mods):
-                    # with Ctrl/Command key
-                    self.zoomRequest.emit(ev.delta(), ev.pos())
-                else:
-                    self.scrollRequest.emit(
-                        ev.delta(),
-                        QtCore.Qt.Horizontal
-                        if (QtCore.Qt.ShiftModifier == int(mods))
-                        else QtCore.Qt.Vertical,
-                    )
-            else:
-                self.scrollRequest.emit(ev.delta(), QtCore.Qt.Horizontal)
+            # scroll
+            self.scrollRequest.emit(delta.x(), QtCore.Qt.Orientation.Horizontal)
+            self.scrollRequest.emit(delta.y(), QtCore.Qt.Orientation.Vertical)
+
         ev.accept()
 
     def moveByKeyboard(self, offset):
@@ -843,7 +827,7 @@ class Canvas(QtWidgets.QWidget):
     def keyReleaseEvent(self, ev):
         modifiers = ev.modifiers()
         if self.drawing():
-            if int(modifiers) == 0:
+            if modifiers == QtCore.Qt.KeyboardModifier.NoModifier:
                 self.snapping = True
         elif self.editing():
             if self.movingShape and self.selectedShapes:

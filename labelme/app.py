@@ -180,8 +180,8 @@ class MainWindow(QtWidgets.QMainWindow):
         scrollArea.setWidget(self.canvas)
         scrollArea.setWidgetResizable(True)
         self.scrollBars = {
-            Qt.Vertical: scrollArea.verticalScrollBar(),
-            Qt.Horizontal: scrollArea.horizontalScrollBar(),
+            Qt.Orientation.Vertical: scrollArea.verticalScrollBar(),
+            Qt.Orientation.Horizontal: scrollArea.horizontalScrollBar(),
         }
         self.canvas.scrollRequest.connect(self.scrollRequest)
 
@@ -192,14 +192,14 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.setCentralWidget(scrollArea)
 
-        features = QtWidgets.QDockWidget.DockWidgetFeatures()
+        features = QtWidgets.QDockWidget.DockWidgetFeature.NoDockWidgetFeatures
         for dock in ["flag_dock", "label_dock", "shape_dock", "file_dock"]:
             if self._config[dock]["closable"]:
-                features = features | QtWidgets.QDockWidget.DockWidgetClosable
+                features = features | QtWidgets.QDockWidget.DockWidgetFeature.DockWidgetClosable
             if self._config[dock]["floatable"]:
-                features = features | QtWidgets.QDockWidget.DockWidgetFloatable
+                features = features | QtWidgets.QDockWidget.DockWidgetFeature.DockWidgetFloatable
             if self._config[dock]["movable"]:
-                features = features | QtWidgets.QDockWidget.DockWidgetMovable
+                features = features | QtWidgets.QDockWidget.DockWidgetFeature.DockWidgetMovable
             getattr(self, dock).setFeatures(features)
             if self._config[dock]["show"] is False:
                 getattr(self, dock).setVisible(False)
@@ -541,7 +541,7 @@ class MainWindow(QtWidgets.QMainWindow):
             fitWidth,
         )
         self.zoomMode = self.FIT_WINDOW
-        fitWindow.setChecked(Qt.Checked)
+        #fitWindow.setChecked(Qt.Checked)
         self.scalers = {
             self.FIT_WINDOW: self.scaleFitWindow,
             self.FIT_WIDTH: self.scaleFitWidth,
@@ -775,8 +775,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.zoom_values = {}  # key=filename, value=(zoom_mode, zoom_value)
         self.brightnessContrast_values = {}
         self.scroll_values = {
-            Qt.Horizontal: {},
-            Qt.Vertical: {},
+            Qt.Orientation.Horizontal: {},
+            Qt.Orientation.Vertical: {},
         }  # key=filename, value=scroll_value
 
         if filename is not None and osp.isdir(filename):
@@ -1028,7 +1028,7 @@ class MainWindow(QtWidgets.QMainWindow):
             menu.addAction(action)
 
     def popLabelListMenu(self, point):
-        self.menus.labelList.exec_(self.labelList.mapToGlobal(point))
+        self.menus.labelList.exec(self.labelList.mapToGlobal(point))
 
     def validateLabel(self, label):
         # no validation
@@ -1411,12 +1411,12 @@ class MainWindow(QtWidgets.QMainWindow):
             y_shift = round(pos.y() * canvas_scale_factor) - pos.y()
 
             self.setScroll(
-                Qt.Horizontal,
-                self.scrollBars[Qt.Horizontal].value() + x_shift,
+                Qt.Orientation.Horizontal,
+                self.scrollBars[Qt.Orientation.Horizontal].value() + x_shift,
             )
             self.setScroll(
-                Qt.Vertical,
-                self.scrollBars[Qt.Vertical].value() + y_shift,
+                Qt.Orientation.Vertical,
+                self.scrollBars[Qt.Orientation.Vertical].value() + y_shift,
             )
 
     def setFitWindow(self, value=True):
@@ -1748,7 +1748,7 @@ class MainWindow(QtWidgets.QMainWindow):
         )
         fileDialog.setWindowFilePath(path)
         fileDialog.setViewMode(FileDialogPreview.Detail)
-        if fileDialog.exec_():
+        if QtWidgets.QFileDialog.exec_(fileDialog):
             fileName = fileDialog.selectedFiles()[0]
             if fileName:
                 self.loadFile(fileName)

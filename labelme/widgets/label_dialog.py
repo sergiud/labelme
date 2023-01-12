@@ -9,7 +9,7 @@ from labelme.logger import logger
 import labelme.utils
 
 
-QT5 = QT_VERSION[0] == "5"
+QT6 = QT_VERSION[0] == "5"
 
 
 # TODO(unknown):
@@ -53,7 +53,7 @@ class LabelDialog(QtWidgets.QDialog):
         self.edit_group_id = QtWidgets.QLineEdit()
         self.edit_group_id.setPlaceholderText("Group ID")
         self.edit_group_id.setValidator(
-            QtGui.QRegExpValidator(QtCore.QRegExp(r"\d*"), None)
+            QtGui.QRegularExpressionValidator(QtCore.QRegularExpression(r"\d*"), None)
         )
         layout = QtWidgets.QVBoxLayout()
         if show_text_field:
@@ -67,8 +67,8 @@ class LabelDialog(QtWidgets.QDialog):
             QtCore.Qt.Horizontal,
             self,
         )
-        bb.button(bb.Ok).setIcon(labelme.utils.newIcon("done"))
-        bb.button(bb.Cancel).setIcon(labelme.utils.newIcon("undo"))
+        bb.button(bb.StandardButton.Ok).setIcon(labelme.utils.newIcon("done"))
+        bb.button(bb.StandardButton.Cancel).setIcon(labelme.utils.newIcon("undo"))
         bb.accepted.connect(self.validate)
         bb.rejected.connect(self.reject)
         layout.addWidget(bb)
@@ -106,7 +106,7 @@ class LabelDialog(QtWidgets.QDialog):
         self.setLayout(layout)
         # completion
         completer = QtWidgets.QCompleter()
-        if not QT5 and completion != "startswith":
+        if not QT6 and completion != "startswith":
             logger.warn(
                 "completion other than 'startswith' is only "
                 "supported with Qt5. Using 'startswith'"
@@ -232,7 +232,7 @@ class LabelDialog(QtWidgets.QDialog):
         self.edit.setFocus(QtCore.Qt.PopupFocusReason)
         if move:
             self.move(QtGui.QCursor.pos())
-        if self.exec_():
+        if self.exec():
             return self.edit.text(), self.getFlags(), self.getGroupId()
         else:
             return None, None, None

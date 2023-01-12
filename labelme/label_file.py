@@ -9,7 +9,7 @@ import PIL.Image
 from labelme import __version__
 from labelme.logger import logger
 from labelme import PY2
-from labelme import QT4
+from labelme import QT5
 from labelme import utils
 
 
@@ -57,7 +57,7 @@ class LabelFile(object):
 
         with io.BytesIO() as f:
             ext = osp.splitext(filename)[1].lower()
-            if PY2 and QT4:
+            if PY2 and QT5:
                 format = "PNG"
             elif ext in [".jpg", ".jpeg"]:
                 format = "JPEG"
@@ -105,7 +105,7 @@ class LabelFile(object):
 
             if data["imageData"] is not None:
                 imageData = base64.b64decode(data["imageData"])
-                if PY2 and QT4:
+                if PY2 and QT5:
                     imageData = utils.img_data_to_png_data(imageData)
             else:
                 # relative path from label file to relative path from cwd
