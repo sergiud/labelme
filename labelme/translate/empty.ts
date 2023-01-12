@@ -312,8 +312,7 @@
     </message>
     <message>
         <location filename="../app.py" line="324"/>
-        <source>&amp;Hide
-Polygons</source>
+        <source>&amp;Hide Polygons</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -323,8 +322,7 @@ Polygons</source>
     </message>
     <message>
         <location filename="../app.py" line="327"/>
-        <source>&amp;Show
-Polygons</source>
+        <source>&amp;Show Polygons</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
